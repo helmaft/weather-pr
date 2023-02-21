@@ -27,7 +27,6 @@ from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.svm import SVC
 
 from sklearn.metrics import classification_report
-from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 
 import seaborn as sns
 
@@ -71,7 +70,7 @@ temp_by_month = df.groupby('month')['temp_max'].mean()
 
 # Define the sidebar options
 options = ['Data', 'Histogram', 'Horizontal Bar Chart', 'Pie Chart', 'Treemap', 'Average Temperature by Month', 'scatter plot of temperature vs. precipitation'
-           ,'Histogram of wind speed','Box plot of temperature by month','Heatmap of average temperature by year and month','Correlation between Features',
+           ,'Histogram of wind speed','Box plot of temperature by month','Heatmap of average temperature by year and month',
            'Scatter Plot Matrix','Scatter plot matrix of temperature, precipitation, and wind','3D scatter plot of temperature, precipitation, and wind',
            'Parallel coordinates plot of temperature, precipitation, and wind','Density plot of wind speed by temperature','Violin plot of temperature by month',]
 
@@ -82,10 +81,12 @@ selection = st.sidebar.selectbox('Select a chart', options)
 if selection == 'Data':
     st.write('## Seattle Weather Data')
     st.write(df.head())
+    
 elif selection == 'Histogram':
     fig = px.histogram(df, x='weather', nbins=60)
     fig.update_layout(title='Distribution of Weather Types')
     st.plotly_chart(fig)
+    
 elif selection == 'Horizontal Bar Chart':
     weather_counts = df['weather'].value_counts()
     fig = go.Figure(go.Bar(
@@ -93,8 +94,9 @@ elif selection == 'Horizontal Bar Chart':
         y=weather_counts.index,
         orientation='h'
     ))
-    fig.update_layout(title='Distribution of Weather Types')
+    fig.update_layout(title='Horizontal Bar Chart')
     st.plotly_chart(fig)
+    
 elif selection == 'Pie Chart':
     weather_counts = df['weather'].value_counts()
     fig = go.Figure(go.Pie(
@@ -103,6 +105,9 @@ elif selection == 'Pie Chart':
     ))
     fig.update_layout(title='Distribution of Weather Types')
     st.plotly_chart(fig)
+    
+    
+    
 elif selection == 'Treemap':
     weather_counts = df.groupby('weather').size()
     weather_counts.index = weather_counts.index.map('_'.join)
@@ -181,28 +186,28 @@ elif selection == 'Heatmap of average temperature by year and month':
     )
     st.plotly_chart(fig)
 
-elif selection == 'Correlation between Features':
-    corr_matrix = df.corr()
+# elif selection == 'Correlation between Features':
+#     corr_matrix = df.corr()
 
-    # Create a heatmap of the correlation matrix
-    fig = px.imshow(corr_matrix, 
-                    x=corr_matrix.columns, 
-                    y=corr_matrix.columns, 
-                    color_continuous_scale='RdBu_r', 
-                    title='Correlation between Features')
+#     # Create a heatmap of the correlation matrix
+#     fig = px.imshow(corr_matrix, 
+#                     x=corr_matrix.columns, 
+#                     y=corr_matrix.columns, 
+#                     color_continuous_scale='RdBu_r', 
+#                     title='Correlation between Features')
 
-    # Set the axis labels and colorbar title
-    fig.update_layout(
-        xaxis_title='Features',
-        yaxis_title='Features',
-        coloraxis_colorbar_title='Correlation Coefficient'
-    )
-    st.plotly_chart(fig)
+#     # Set the axis labels and colorbar title
+#     fig.update_layout(
+#         xaxis_title='Features',
+#         yaxis_title='Features',
+#         coloraxis_colorbar_title='Correlation Coefficient'
+#     )
+#     st.plotly_chart(fig)
     
 elif selection == 'Scatter Plot Matrix':
     fig = px.scatter_matrix(df, dimensions=["precipitation", "temp_max", "temp_min", "wind"], color="month")
-    fig.show()
     st.plotly_chart(fig)
+    
     
 elif selection == 'Scatter plot matrix of temperature, precipitation, and wind':
     # Create a scatter plot matrix of temperature, precipitation, and wind
@@ -212,6 +217,7 @@ elif selection == 'Scatter plot matrix of temperature, precipitation, and wind':
         title='Relationships Between Temperature, Precipitation, and Wind'
     )
     st.plotly_chart(fig)
+    
     
 elif selection == '3D scatter plot of temperature, precipitation, and wind':
 # Create a 3D scatter plot of temperature, precipitation, and wind
@@ -271,7 +277,6 @@ elif selection == 'Violin plot of temperature by month':
 
 
 
-st.title('Machine Learning Models')
 
 
 # Add a separation line with custom style
@@ -293,12 +298,13 @@ st.markdown('<p class="horizontalLine"></p>', unsafe_allow_html=True)
 
 
 
+st.title('Machine Learning Models')
 
 
 
 
 
-options_models =['DecisionTreeClassifier','Random Forest' ,'SVM','GradientBoostingClassifier','KNN','Linear Discriminant Analysis']
+options_models =['DecisionTreeClassifier','Random Forest' ,'SVM','GradientBoostingClassifier','KNN']
 # Display the sidebar 2 
 selection = st.sidebar.selectbox('Select a Model', options_models)
 
@@ -312,45 +318,70 @@ if selection == 'DecisionTreeClassifier':
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
     # Train the model
-    model = DecisionTreeClassifier()
-    model.fit(X_train, y_train)
+    DTC_model = DecisionTreeClassifier()
+    DTC_model.fit(X_train, y_train)
 
     # Make predictions on the testing data
-    y_pred = model.predict(X_test)
+    y_pred = DTC_model.predict(X_test)
 
     # Evaluate the model's performance
     accuracy = accuracy_score(y_test, y_pred)
     st.write(f'The accuracy of the Decision Tree Classifier is {accuracy:.2f}')
-
-    def show_results(y_test, y_pred):
-        st.write("Confusion Matrix:")
-        st.write(confusion_matrix(y_test, y_pred))
-        st.write("\nClassification Report:")
-        st.write(classification_report(y_test, y_pred))       
     
-    
-    # Create a button to run the model
-    if st.button("Decision Tree Classifier: Run Model"):
-        # Make predictions on the testing data
-        if selection == 'DecisionTreeClassifier':
-            y_pred = model.predict(X_test)
-        else:
-            st.write("Model not supported")
-            st.stop()
+    # Display the confusion matrix
+    cm = confusion_matrix(y_test, y_pred)
+    fig, ax = plt.subplots(figsize=(8, 6))
+    sns.heatmap(cm, annot=True, cmap='Blues', fmt='g', ax=ax)
+    ax.set_xlabel('Predicted')
+    ax.set_ylabel('Actual')
+    st.pyplot(fig)
+     
+        
+    def DecisionTreeClassifier_app():
+        st.write("# Weather Prediction Type")
+        
+        # Add user input fields
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            precipitation = st.number_input("Enter precipitation:", format='%f', step=0.1)
+        with col2:
+            temp_max = st.number_input("Enter max temperature:", format='%f', step=0.1)
+        with col3:
+            temp_min = st.number_input("Enter min temperature:", format='%f', step=0.1)
+        with col4:
+            wind = st.number_input("Enter wind speed:", format='%f', step=0.1)
+            
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            year = st.number_input("Enter year:", format='%d', step=1)
+        with col2:
+            month = st.number_input("Enter month:", format='%d', step=1)
+        with col3:
+            day = st.number_input("Enter day:", format='%d', step=1)
+        
+        # Add a button to submit the form
+        if st.button("Predict Weather"):
+            # Use the user input to make a prediction with the trained model
+            input_data = [[precipitation, temp_max, temp_min, wind, year, month, day]]
+            predicted_weather_DTC = DTC_model.predict(input_data)[0]
 
-        # Show the results
-        show_results(y_test, y_pred)
+            # Display the predicted results
+            st.write('Results of Models :\n')
+            st.write(f"The predicted weather by Decision Tree Classifier is: {predicted_weather_DTC}")
+    DecisionTreeClassifier_app()
     
     
 elif selection == 'Random Forest':
     X = df[['precipitation', 'temp_max', 'temp_min', 'wind', 'year', 'month', 'day']]
     y = df['weather']
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-    model = RandomForestClassifier()
-    model.fit(X_train, y_train)
-    y_pred = model.predict(X_test)
+    RF_model = RandomForestClassifier()
+    RF_model.fit(X_train, y_train)
+    y_pred = RF_model.predict(X_test)
     accuracy = accuracy_score(y_test, y_pred)
     st.write(f'The accuracy of the Random Forest is {accuracy:.2f}')
+    
+    
     # Display the confusion matrix
     cm = confusion_matrix(y_test, y_pred)
     fig, ax = plt.subplots(figsize=(8, 6))
@@ -362,37 +393,44 @@ elif selection == 'Random Forest':
     
     st.set_option('deprecation.showPyplotGlobalUse', False) # disable deprecation warning
 
-    importances = model.feature_importances_
-    features = X_train.columns
-    indices = np.argsort(importances)[::-1]
 
-    fig, ax = plt.subplots(figsize=(10, 8))
-    ax.set_title('Feature Importance')
-    ax.bar(range(len(features)), importances[indices], color='r', align='center')
-    ax.set_xticks(range(len(features)))
-    ax.set_xticklabels([features[i] for i in indices], rotation=90)
-    ax.set_xlabel('Features')
-    ax.set_ylabel('Importance')
-    st.pyplot(fig)
-    
-    def show_results(y_test, y_pred):
-        st.write("Confusion Matrix:")
-        st.write(confusion_matrix(y_test, y_pred))
-        st.write("\nClassification Report:")
-        st.write(classification_report(y_test, y_pred))       
-    
-    
-    # Create a button to run the model
-    if st.button("Random Forest :Run Model"):
-        # Make predictions on the testing data
-        if selection == 'Random Forest':
-            y_pred = model.predict(X_test)
-        else:
-            st.write("Model not supported")
-            st.stop()
+        
+          
+    def RandomForest_app():
+        st.write("# Weather Prediction Type")
+        
+        # Add user input fields
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            precipitation = st.number_input("Enter precipitation:", format='%f', step=0.1)
+        with col2:
+            temp_max = st.number_input("Enter max temperature:", format='%f', step=0.1)
+        with col3:
+            temp_min = st.number_input("Enter min temperature:", format='%f', step=0.1)
+        with col4:
+            wind = st.number_input("Enter wind speed:", format='%f', step=0.1)
+            
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            year = st.number_input("Enter year:", format='%d', step=1)
+        with col2:
+            month = st.number_input("Enter month:", format='%d', step=1)
+        with col3:
+            day = st.number_input("Enter day:", format='%d', step=1)
+        
+        # Add a button to submit the form
+        if st.button("Predict Weather"):
+            # Use the user input to make a prediction with the trained model
+            input_data = [[precipitation, temp_max, temp_min, wind, year, month, day]]
+            predicted_weather_DTC = RF_model.predict(input_data)[0]
 
-        # Show the results
-        show_results(y_test, y_pred)
+            # Display the predicted results
+            st.write('Results of Models :\n')
+            st.write(f"The predicted weather by Random Forest is: {predicted_weather_DTC}")
+    RandomForest_app()    
+    
+    
+
     
     
     
@@ -411,28 +449,58 @@ elif selection == 'SVM':
     svm_model.fit(X_train, y_train)
 
     # Make predictions on the testing data
-    y_pred = svm_model.predict(X_test)   
+    y_pred = svm_model.predict(X_test) 
+    
+    
+    accuracy = accuracy_score(y_test, y_pred)
+    st.write(f'The accuracy of the Random Forest is {accuracy:.2f}')
+    
+    
+    # Display the confusion matrix
+    cm = confusion_matrix(y_test, y_pred)
+    fig, ax = plt.subplots(figsize=(8, 6))
+    sns.heatmap(cm, annot=True, cmap='Blues', fmt='g', ax=ax)
+    ax.set_xlabel('Predicted')
+    ax.set_ylabel('Actual')
+    st.pyplot(fig)
     
     
     
-    def show_results(y_test, y_pred):
-        st.write("Confusion Matrix:")
-        st.write(confusion_matrix(y_test, y_pred))
-        st.write("\nClassification Report:")
-        st.write(classification_report(y_test, y_pred))       
     
-    
-    # Create a button to run the model
-    if st.button("Support Vector Machine : Run Model"):
-        # Make predictions on the testing data
-        if selection == 'SVM':
-            y_pred = svm_model.predict(X_test)
-        else:
-            st.write("Model not supported")
-            st.stop()
+    def SVM_app():
+        st.write("# Weather Prediction Type")
+        
+        # Add user input fields
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            precipitation = st.number_input("Enter precipitation:", format='%f', step=0.1)
+        with col2:
+            temp_max = st.number_input("Enter max temperature:", format='%f', step=0.1)
+        with col3:
+            temp_min = st.number_input("Enter min temperature:", format='%f', step=0.1)
+        with col4:
+            wind = st.number_input("Enter wind speed:", format='%f', step=0.1)
+            
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            year = st.number_input("Enter year:", format='%d', step=1)
+        with col2:
+            month = st.number_input("Enter month:", format='%d', step=1)
+        with col3:
+            day = st.number_input("Enter day:", format='%d', step=1)
+        
+        # Add a button to submit the form
+        if st.button("Predict Weather"):
+            # Use the user input to make a prediction with the trained model
+            input_data = [[precipitation, temp_max, temp_min, wind, year, month, day]]
+            predicted_weather_DTC = svm_model.predict(input_data)[0]
 
-        # Show the results
-        show_results(y_test, y_pred)
+            # Display the predicted results
+            st.write('Results of Models :\n')
+            st.write(f"The predicted weather by Support Vector Machines (SVM) is: {predicted_weather_DTC}")
+    SVM_app()        
+    
+
 
 elif selection == 'GradientBoostingClassifier':
     
@@ -448,26 +516,57 @@ elif selection == 'GradientBoostingClassifier':
 
     # Make predictions on the testing data
     y_pred = gbm_model.predict(X_test)
-
-
-    def show_results(y_test, y_pred):
-        st.write("Confusion Matrix:")
-        st.write(confusion_matrix(y_test, y_pred))
-        st.write("\nClassification Report:")
-        st.write(classification_report(y_test, y_pred))       
     
     
-    # Create a button to run the model
-    if st.button("Gradient Boosting Classifier: Run Model"):
-        # Make predictions on the testing data
-        if selection == 'GradientBoostingClassifier':
-            y_pred = gbm_model.predict(X_test)
-        else:
-            st.write("Model not supported")
-            st.stop()
+    
+    accuracy = accuracy_score(y_test, y_pred)
+    st.write(f'The accuracy of the Random Forest is {accuracy:.2f}')
+    
+    
+    # Display the confusion matrix
+    cm = confusion_matrix(y_test, y_pred)
+    fig, ax = plt.subplots(figsize=(8, 6))
+    sns.heatmap(cm, annot=True, cmap='Blues', fmt='g', ax=ax)
+    ax.set_xlabel('Predicted')
+    ax.set_ylabel('Actual')
+    st.pyplot(fig)
 
-        # Show the results
-        show_results(y_test, y_pred)
+
+
+    def GBC_app():
+        st.write("# Weather Prediction Type")
+        
+        # Add user input fields
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            precipitation = st.number_input("Enter precipitation:", format='%f', step=0.1)
+        with col2:
+            temp_max = st.number_input("Enter max temperature:", format='%f', step=0.1)
+        with col3:
+            temp_min = st.number_input("Enter min temperature:", format='%f', step=0.1)
+        with col4:
+            wind = st.number_input("Enter wind speed:", format='%f', step=0.1)
+            
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            year = st.number_input("Enter year:", format='%d', step=1)
+        with col2:
+            month = st.number_input("Enter month:", format='%d', step=1)
+        with col3:
+            day = st.number_input("Enter day:", format='%d', step=1)
+        
+        # Add a button to submit the form
+        if st.button("Predict Weather"):
+            # Use the user input to make a prediction with the trained model
+            input_data = [[precipitation, temp_max, temp_min, wind, year, month, day]]
+            predicted_weather_DTC = gbm_model.predict(input_data)[0]
+
+            # Display the predicted results
+            st.write('Results of Models :\n')
+            st.write(f"The predicted weather by Gradient Boosting Classifier is: {predicted_weather_DTC}")
+    GBC_app()            
+
+
 
 
 
@@ -481,53 +580,65 @@ elif selection == 'KNN':
     # Create the KNN model and train it on the training data
     knn_model = KNeighborsClassifier(n_neighbors=5)
     knn_model.fit(X_train, y_train)
+    
+    # Make predictions on the testing data
+    y_pred = knn_model.predict(X_test)
+    
+    accuracy = accuracy_score(y_test, y_pred)
+    st.write(f'The accuracy of the KNN is {accuracy:.2f}')
+    
+    
+    # Display the confusion matrix
+    cm = confusion_matrix(y_test, y_pred)
+    fig, ax = plt.subplots(figsize=(8, 6))
+    sns.heatmap(cm, annot=True, cmap='Blues', fmt='g', ax=ax)
+    ax.set_xlabel('Predicted')
+    ax.set_ylabel('Actual')
+    st.pyplot(fig)
 
-    # Define a function to display the results
-    def show_results(y_test, y_pred):
-        st.write("Confusion Matrix:")
-        st.write(confusion_matrix(y_test, y_pred))
-        st.write("\nClassification Report:")
-        st.write(classification_report(y_test, y_pred))
 
 
-    # Create a button to run the model
-    if st.button("K-Nearest Neighbors: Run Model"):
-        # Make predictions on the testing data
-        if selection == 'KNN':
-            y_pred = knn_model.predict(X_test)
-        else:
-            st.write("Model not supported")
-            st.stop()
-
-        # Show the results
-        show_results(y_test, y_pred)
-
-elif selection == 'Linear Discriminant Analysis':
-    # Define the input and target variables
-    X = df[['precipitation', 'temp_max', 'temp_min', 'wind', 'year', 'month', 'day']]
-    y = df['weather']
-
-    # Split the data into training and testing sets
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-    # Create the LDA model and train it on the training data
-    lda_model = LinearDiscriminantAnalysis()
-    lda_model.fit(X_train, y_train)
-
-    # Define a function to display the results
-    def show_results(y_test, y_pred):
-        st.write("Confusion Matrix:")
-        st.write(confusion_matrix(y_test, y_pred))
-        st.write("\nClassification Report:")
-        st.write(classification_report(y_test, y_pred))
-
-    # Create a button to run the model
-    if st.button("Linear Discriminant Analysis: Run Model"):
-        # Make predictions on the testing data
-        y_pred = lda_model.predict(X_test)
-
-        # Show the results
-        show_results(y_test, y_pred)
+    def KKN_app():
+        st.write("# Weather Prediction Type")
         
+        # Add user input fields
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            precipitation = st.number_input("Enter precipitation:", format='%f', step=0.1)
+        with col2:
+            temp_max = st.number_input("Enter max temperature:", format='%f', step=0.1)
+        with col3:
+            temp_min = st.number_input("Enter min temperature:", format='%f', step=0.1)
+        with col4:
+            wind = st.number_input("Enter wind speed:", format='%f', step=0.1)
+            
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            year = st.number_input("Enter year:", format='%d', step=1)
+        with col2:
+            month = st.number_input("Enter month:", format='%d', step=1)
+        with col3:
+            day = st.number_input("Enter day:", format='%d', step=1)
         
-        
+        # Add a button to submit the form
+        if st.button("Predict Weather"):
+            # Use the user input to make a prediction with the trained model
+            input_data = [[precipitation, temp_max, temp_min, wind, year, month, day]]
+            predicted_weather_DTC = knn_model.predict(input_data)[0]
+
+            # Display the predicted results
+            st.write('Results of Models :\n')
+            st.write(f"The predicted weather by k-nearest neighbors algorithm is: {predicted_weather_DTC}")
+    KKN_app()            
+
+    
+    
+
+
+
+
+
+
+
+
+
