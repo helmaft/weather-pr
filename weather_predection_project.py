@@ -118,6 +118,7 @@ elif selection == 'Treemap':
     )
     fig.update_layout(title='Distribution of Weather Types')
     st.plotly_chart(fig)
+
 elif selection == 'Average Temperature by Month':
     fig = px.bar(temp_by_month, x=temp_by_month.index, y=temp_by_month.values)
     fig.update_layout(
@@ -186,23 +187,7 @@ elif selection == 'Heatmap of average temperature by year and month':
     )
     st.plotly_chart(fig)
 
-# elif selection == 'Correlation between Features':
-#     corr_matrix = df.corr()
 
-#     # Create a heatmap of the correlation matrix
-#     fig = px.imshow(corr_matrix, 
-#                     x=corr_matrix.columns, 
-#                     y=corr_matrix.columns, 
-#                     color_continuous_scale='RdBu_r', 
-#                     title='Correlation between Features')
-
-#     # Set the axis labels and colorbar title
-#     fig.update_layout(
-#         xaxis_title='Features',
-#         yaxis_title='Features',
-#         coloraxis_colorbar_title='Correlation Coefficient'
-#     )
-#     st.plotly_chart(fig)
     
 elif selection == 'Scatter Plot Matrix':
     fig = px.scatter_matrix(df, dimensions=["precipitation", "temp_max", "temp_min", "wind"], color="month")
@@ -305,6 +290,7 @@ st.title('Machine Learning Models')
 
 
 options_models =['DecisionTreeClassifier','Random Forest' ,'SVM','GradientBoostingClassifier','KNN']
+
 # Display the sidebar 2 
 selection = st.sidebar.selectbox('Select a Model', options_models)
 
@@ -422,11 +408,11 @@ elif selection == 'Random Forest':
         if st.button("Predict Weather"):
             # Use the user input to make a prediction with the trained model
             input_data = [[precipitation, temp_max, temp_min, wind, year, month, day]]
-            predicted_weather_DTC = RF_model.predict(input_data)[0]
+            predicted_weather_RF = RF_model.predict(input_data)[0]
 
             # Display the predicted results
             st.write('Results of Models :\n')
-            st.write(f"The predicted weather by Random Forest is: {predicted_weather_DTC}")
+            st.write(f"The predicted weather by Random Forest is: {predicted_weather_RF}")
     RandomForest_app()    
     
     
@@ -493,11 +479,11 @@ elif selection == 'SVM':
         if st.button("Predict Weather"):
             # Use the user input to make a prediction with the trained model
             input_data = [[precipitation, temp_max, temp_min, wind, year, month, day]]
-            predicted_weather_DTC = svm_model.predict(input_data)[0]
+            predicted_weather_SVM = svm_model.predict(input_data)[0]
 
             # Display the predicted results
             st.write('Results of Models :\n')
-            st.write(f"The predicted weather by Support Vector Machines (SVM) is: {predicted_weather_DTC}")
+            st.write(f"The predicted weather by Support Vector Machines (SVM) is: {predicted_weather_SVM}")
     SVM_app()        
     
 
@@ -559,11 +545,11 @@ elif selection == 'GradientBoostingClassifier':
         if st.button("Predict Weather"):
             # Use the user input to make a prediction with the trained model
             input_data = [[precipitation, temp_max, temp_min, wind, year, month, day]]
-            predicted_weather_DTC = gbm_model.predict(input_data)[0]
+            predicted_weather_GBC = gbm_model.predict(input_data)[0]
 
             # Display the predicted results
             st.write('Results of Models :\n')
-            st.write(f"The predicted weather by Gradient Boosting Classifier is: {predicted_weather_DTC}")
+            st.write(f"The predicted weather by Gradient Boosting Classifier is: {predicted_weather_GBC}")
     GBC_app()            
 
 
@@ -624,11 +610,11 @@ elif selection == 'KNN':
         if st.button("Predict Weather"):
             # Use the user input to make a prediction with the trained model
             input_data = [[precipitation, temp_max, temp_min, wind, year, month, day]]
-            predicted_weather_DTC = knn_model.predict(input_data)[0]
+            predicted_weather_KNN = knn_model.predict(input_data)[0]
 
             # Display the predicted results
             st.write('Results of Models :\n')
-            st.write(f"The predicted weather by k-nearest neighbors algorithm is: {predicted_weather_DTC}")
+            st.write(f"The predicted weather by k-nearest neighbors algorithm is: {predicted_weather_KNN}")
     KKN_app()            
 
     
